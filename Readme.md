@@ -1,192 +1,86 @@
-# Static Files Cleaner
+# Fast Files Cleanup Tool for Mac
 
-A bash script to identify and clean unused static files in your project. The script is particularly useful for Django projects but can be used with any project structure.
+A bash script I created to help find and remove unused static files (images, fonts, etc.) in web projects. It's particularly useful for cleaning up old assets in Django projects, but works with any web project structure.
+
+## Why I Built This
+
+After maintaining several Django projects, I noticed we often had many unused images and other static files sitting around. These files:
+- Bloat git repositories
+- Make deployments slower
+- Add confusion about which assets are actually needed
+
+This tool helps keep projects clean by finding static files that aren't referenced anywhere in your codebase.
 
 ## Features
 
-- Detects unused static files by scanning source files for references
-- Supports multiple file extensions
-- Handles various reference patterns:
-  - Django static template tags (`{% static 'path/to/file' %}`)
-  - CSS/SCSS URL patterns (`url(path/to/file)`)
-  - Relative paths (`../../path/to/file`)
-- Excludes specified directories from search
-- Dry run mode for safe testing
-- Progress bar and detailed logging
-- Handles both absolute and relative paths
-
-## Prerequisites
-
-- Bash shell
-- Unix-like environment (Linux, macOS)
-- Common Unix utilities (`find`, `grep`, `sed`)
+- Find unused static files (images, fonts, etc.)
+- Search through multiple file types (HTML, JS, CSS, etc.)
+- Specify search locations and ignore paths
+- Dry run mode to preview changes
+- Fast operation with caching
+- Handles Django static template tags
 
 ## Installation
 
-1. Download the script:
+Just download and make executable:
 ```bash
-curl -O https://raw.githubusercontent.com/your-repo/cleanup.sh
-```
-
-2. Make it executable:
-```bash
+curl -O https://raw.githubusercontent.com/yourusername/cleanup/main/cleanup.sh
 chmod +x cleanup.sh
 ```
 
 ## Usage
 
-### Basic Command Structure
-
+Basic usage:
 ```bash
-./cleanup.sh -s STATIC_DIR -e EXTENSIONS [options]
+./cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -d
 ```
 
-### Required Parameters
+### Options
 
-- `-s STATIC_DIR`: Directory containing static files to check
-  ```bash
-  -s static/assets/fonts
-  ```
+Required:
+- `-e EXTENSIONS`: File types to check (comma-separated)
+- `-s SEARCH_IN`: File types to search in (comma-separated)
 
-- `-e EXTENSIONS`: Comma-separated list of file extensions to check
-  ```bash
-  -e "ttf,woff,woff2"
-  ```
-
-### Optional Parameters
-
-- `searchExtensions "EXTS"`: File extensions to search in (default: html,js,css)
-  ```bash
-  searchExtensions "html,scss,css"
-  ```
-
-- `excludeFolders "FOLDERS"`: Directories to exclude from search
-  ```bash
-  excludeFolders "venv,node_modules,dist"
-  ```
-
-- `searchPath "PATH"`: Where to search for references (default: current directory)
-  ```bash
-  searchPath "static/assets/scss"
-  ```
-
-- `-d`: Dry run mode (shows what would be deleted without actually deleting)
-- `-v`: Verbose output (shows detailed information about found references)
+Optional:
+- `-l LOCATION`: Where to look for static files. default is current location, or "."
+- `-i IGNORE`: Folders to ignore (comma-separated). for faster result specify folders like node_modules, or venv for python projects because it doesn't make sence to search in these folders.
+- `-d`: Dry run (don't actually delete), just show me what is going on.
+- `-v`: Verbose output. Show more details.
 
 ### Examples
 
-1. Find unused font files:
+Check for unused PNGs and JPGs:
 ```bash
-./cleanup.sh -s static/assets/fonts -e "ttf" \
-    searchExtensions "scss" \
-    excludeFolders "venv,dist,build" \
-    searchPath "static/assets/scss" -d -v
+./cleanup.sh -e "png,jpg" -s "html,js,css" -l "." -d
 ```
 
-2. Find unused images:
+Include fonts and exclude some directories:
 ```bash
-./cleanup.sh -s static/assets/img -e "png,jpg,svg" \
-    searchExtensions "html,js,css" \
-    excludeFolders "venv,node_modules" \
-    searchPath "templates" -d
-```
-
-3. Check specific files in a directory:
-```bash
-./cleanup.sh -s static/assets/icons -e "svg" \
-    searchExtensions "html,scss" \
-    searchPath "." -d
+./cleanup.sh -e "png,jpg,ttf,woff" -s "html,js,css,scss" -l "static/assets" -i "venv,node_modules" -d
 ```
 
 ## How It Works
 
-The script works in three main phases:
+The script:
+1. Creates a cache of all searchable file content
+2. Looks for files with specified extensions
+3. Checks if each file is referenced in the cached content
+4. Reports or removes unused files
 
-1. **Scanning Phase**
-   - Searches through files specified by `searchExtensions`
-   - Looks for three types of references:
-     - Django static tags (`{% static '...' %}`)
-     - URL patterns in CSS/SCSS (`url(...)`)
-     - Direct file references
+## Safety Features
 
-2. **Analysis Phase**
-   - Builds list of all static files in specified directory
-   - Compares against found references
-   - Handles relative paths and various formats
-
-3. **Report/Action Phase**
-   - Shows what files would be removed
-   - Calculates potential space savings
-   - Actually removes files if not in dry run mode
-
-## Real-World Example
-
-Consider a Django project with SCSS files:
-
-```scss
-// In static/assets/scss/styles.scss
-@font-face {
-  font-family: 'Montserrat';
-  src: url('../../fonts/Montserrat-Regular.ttf');
-}
-```
-
-To find unused font files:
-```bash
-./cleanup.sh -s static/assets/fonts -e "ttf" \
-    searchExtensions "scss" \
-    searchPath "static/assets/scss" -d
-```
-
-This will:
-1. Look for .ttf files in static/assets/fonts
-2. Search all .scss files in static/assets/scss
-3. Show which font files aren't referenced
+- Dry run mode (`-d`) to preview changes
+- Verbose mode (`-v`) to see detailed info
+- Backups aren't deleted (located outside static dirs)
+- Ignores specified directories
 
 ## Tips
 
-1. **Start Specific**: Begin with specific directories and file types
-   ```bash
-   ./cleanup.sh -s static/assets/fonts -e "ttf" searchPath "static/assets/scss"
-   ```
-
-2. **Use Dry Run**: Always use `-d` first to preview changes
-   ```bash
-   ./cleanup.sh -s static/assets/img -e "png" -d
-   ```
-
-3. **Check References**: Use `-v` to see where files are referenced
-   ```bash
-   ./cleanup.sh -s static/icons -e "svg" -v
-   ```
-
-## Best Practices
-
-1. Always run with `-d` first
-2. Back up important files before running without `-d`
-3. Use specific paths rather than searching entire project
-4. Start with smaller directories to test
-5. Use version control for safety
-
-## Troubleshooting
-
-Common issues and solutions:
-
-1. **Files marked as unused but actually used**
-   - Check file extensions in `searchExtensions`
-   - Use `-v` to see what's being found
-   - Check path structure in references
-
-2. **Script runs slowly**
-   - Use more specific `searchPath`
-   - Add irrelevant directories to `excludeFolders`
-   - Limit scope of search
-
-3. **No files found**
-   - Check paths are correct
-   - Verify file extensions
-   - Use `-v` for detailed output
+1. Always run with `-d` first to see what would be removed
+2. Use `-v` to understand why files are marked as unused
+3. Check the templates/code if a file is marked unused but you think it's used
+4. Exclude cache and build directories using `-i`
 
 ## Contributing
 
-Feel free to submit issues and enhancement requests!
+Feel free to open issues or submit PRs if you have improvements!
