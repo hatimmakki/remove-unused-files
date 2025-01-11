@@ -35,6 +35,13 @@ Basic usage:
 ./cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -d
 ```
 
+### Output example:
+
+<!--TODO: display image -->
+
+![Output](./images/output.png)
+
+
 ### Options
 
 Required:
