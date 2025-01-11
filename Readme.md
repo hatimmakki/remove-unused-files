@@ -27,6 +27,11 @@ Basic usage:
 ./static-cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -d
 ```
 
+### Outputy
+
+![Output](./images/output.png)
+
+
 ### Options
 
 Required:
