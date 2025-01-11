@@ -22,11 +22,14 @@ print_usage() {
     echo "Optional:"
     echo "  -l LOCATION         Location to search in (default: current directory)"
     echo "  -i IGNORE           Folders to ignore (comma-separated)"
+
+    echo "  -if IGNORE_FILES    Files to never mark as unused (comma-separated)"
+
     echo "  -d                  Dry run - don't actually delete files"
     echo "  -v                  Verbose output"
     echo
     echo "Example:"
-    echo "  $0 -e \"png,jpg\" -s \"html,js,css\" -l \"static/assets\" -i \"venv,node_modules\" -d"
+    echo "  $0 -e \"png,jpg\" -s \"html,js,css\" -l \"static/assets\" -i \"venv,node_modules\" -if \"package.json\" -d"
     exit 1
 }
 
@@ -48,6 +51,7 @@ CHECK_EXTENSIONS=""
 SEARCH_EXTENSIONS=""
 SEARCH_LOCATION="."
 IGNORE_FOLDERS=""
+IGNORE_FILES=""
 DRY_RUN=false
 VERBOSE=false
 
@@ -68,6 +72,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         -i)
             IGNORE_FOLDERS="${2//\"/}"
+            shift 2
+            ;;
+
+        -if)
+            IGNORE_FILES="${2//\"/}"
             shift 2
             ;;
         -d)
@@ -94,6 +103,9 @@ fi
 # Convert extensions to arrays
 IFS=',' read -ra CHECK_EXT_ARRAY <<< "$CHECK_EXTENSIONS"
 IFS=',' read -ra SEARCH_EXT_ARRAY <<< "$SEARCH_EXTENSIONS"
+if [ ! -z "$IGNORE_FILES" ]; then
+    IFS=',' read -ra IGNORE_FILES_ARRAY <<< "$IGNORE_FILES"
+fi
 
 # Convert relative paths to absolute paths
 if [[ ! "$SEARCH_LOCATION" = /* ]]; then
@@ -133,6 +145,10 @@ echo "File types to search in: ${SEARCH_EXTENSIONS}"
 if [ ! -z "$IGNORE_FOLDERS" ]; then
     echo "Ignoring folders: ${IGNORE_FOLDERS}"
 fi
+if [ ! -z "$IGNORE_FILES" ]; then
+    echo "Ignoring files: ${IGNORE_FILES}"
+fi
+
 echo -e "Dry run: $([ "$DRY_RUN" = true ] && echo 'Yes' || echo 'No')\n"
 
 # Create temporary file for content cache
@@ -157,27 +173,42 @@ for ext in "${CHECK_EXT_ARRAY[@]}"; do
             filename=$(basename "$file")
             [ "$VERBOSE" = true ] && echo "Checking: $filename"
             
-            # Check if the file is referenced anywhere
-            if ! grep -q "$filename" "$TEMP_FILE"; then
-                if [[ "$OSTYPE" == "darwin"* ]]; then
-                    size=$(stat -f %z "$file")
-                else
-                    size=$(stat -c %s "$file")
-                fi
-                
-                ((UNUSED_FILES++))
-                ((TOTAL_SIZE+=size))
-                formatted_size=$(format_size $size)
-                
-                if [ "$DRY_RUN" = true ]; then
-                    echo -e "${YELLOW}Would remove:${NC} $file ($formatted_size)"
-                else
-                    echo -e "${RED}Removing:${NC} $file ($formatted_size)"
-                    rm "$file"
-                fi
-            elif [ "$VERBOSE" = true ]; then
-                echo -e "${GREEN}File is used${NC}"
+            SKIP=false
+            if [ ! -z "$IGNORE_FILES" ]; then
+                for ignore_file in "${IGNORE_FILES_ARRAY[@]}"; do
+                    if [ "$filename" = "$ignore_file" ]; then
+                        SKIP=true
+                        [ "$VERBOSE" = true ] && echo -e "${GREEN}Skipping ignored file: $filename${NC}"
+                        break
+                    fi
+                done
             fi
+
+            if [ "$SKIP" = false ]; then
+
+                # Check if the file is referenced anywhere
+                if ! grep -q "$filename" "$TEMP_FILE"; then
+                    if [[ "$OSTYPE" == "darwin"* ]]; then
+                        size=$(stat -f %z "$file")
+                    else
+                        size=$(stat -c %s "$file")
+                    fi
+                    
+                    ((UNUSED_FILES++))
+                    ((TOTAL_SIZE+=size))
+                    formatted_size=$(format_size $size)
+                    
+                    if [ "$DRY_RUN" = true ]; then
+                        echo -e "${YELLOW}Would remove:${NC} $file ($formatted_size)"
+                    else
+                        echo -e "${RED}Removing:${NC} $file ($formatted_size)"
+                        rm "$file"
+                    fi
+                elif [ "$VERBOSE" = true ]; then
+                    echo -e "${GREEN}File is used${NC}"
+                fi
+            fi
+
         fi
     done < <(eval "find \"$SEARCH_LOCATION\" -type f -name \"*.$ext\" $EXCLUDE_PATTERN")
 done
