@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Author: Hatim Makki Hoho
+# Date: 2024-1-11, first release at 2024-1-11 11:11:11 AM
+# Description: This script is used to find and delete unused static files in a project.
+# Usage: ./cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -i "venv,node_modules" -d
+
+
 # Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
