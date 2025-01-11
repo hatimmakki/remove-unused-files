@@ -16,15 +16,15 @@ This tool helps keep projects clean by finding static files that aren't referenc
 Download the script directly using `curl`:
 
 ```bash
-curl -O https://raw.githubusercontent.com/hatimmakki/remove-unused-files/main/static-cleanup.sh
-chmod +x static-cleanup.sh
+curl -O https://raw.githubusercontent.com/hatimmakki/remove-unused-files/main/cleanup.sh
+chmod +x cleanup.sh
 ```
 
 ## Usage
 
 Basic usage:
 ```bash
-./static-cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -d
+./cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -d
 ```
 
 ### Outputy
@@ -48,21 +48,21 @@ Optional:
 
 Check for unused PNGs and JPGs:
 ```bash
-./static-cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -d
+./cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -d
 ```
 
 Include fonts and exclude some directories:
 ```bash
-./static-cleanup.sh -e "png,jpg,ttf,woff" -s "html,js,css,scss" -l "static/assets" -i "venv,node_modules" -d
+./cleanup.sh -e "png,jpg,ttf,woff" -s "html,js,css,scss" -l "static/assets" -i "venv,node_modules" -d
 ```
 
 Real-world example - checking static assets in a Django project:
 ```bash
 # First, run in dry-run mode to see what would be removed
-./static-cleanup.sh -e "png,jpg,svg" -s "html,js,css,scss" -l "static/assets" -i "venv,node_modules,dist" -d
+./cleanup.sh -e "png,jpg,svg" -s "html,js,css,scss" -l "static/assets" -i "venv,node_modules,dist" -d
 
 # If the results look good, run without -d to actually remove files
-./static-cleanup.sh -e "png,jpg,svg" -s "html,js,css,scss" -l "static/assets" -i "venv,node_modules,dist"
+./cleanup.sh -e "png,jpg,svg" -s "html,js,css,scss" -l "static/assets" -i "venv,node_modules,dist"
 ```
 
 ## How It Works
