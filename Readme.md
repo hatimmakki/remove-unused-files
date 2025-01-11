@@ -13,10 +13,10 @@ This tool helps keep projects clean by finding static files that aren't referenc
 
 ## Installation
 
-Clone the repository and make the script executable:
+Download the script directly using `curl`:
+
 ```bash
-git clone https://github.com/hatimmakki/remove-unused-files.git
-cd remove-unused-files
+curl -O https://raw.githubusercontent.com/hatimmakki/remove-unused-files/main/static-cleanup.sh
 chmod +x static-cleanup.sh
 ```
 
