@@ -1,6 +1,6 @@
-# Fast Files Cleanup Tool for Mac
+# Remove Unused Files (very fast)
 
-A bash script I created to help find and remove unused static files (images, fonts, etc.) in web projects. It's particularly useful for cleaning up old assets in Django projects, but works with any web project structure.
+A bash script to find and remove unused static files (images, fonts, etc.) in web projects. It's particularly useful for cleaning up old assets in Django projects, but works with any web project structure.
 
 ## Why I Built This
 
@@ -11,36 +11,21 @@ After maintaining several Django projects, I noticed we often had many unused im
 
 This tool helps keep projects clean by finding static files that aren't referenced anywhere in your codebase.
 
-## Features
-
-- Find unused static files (images, fonts, etc.)
-- Search through multiple file types (HTML, JS, CSS, etc.)
-- Specify search locations and ignore paths
-- Dry run mode to preview changes
-- Fast operation with caching
-- Handles Django static template tags
-
 ## Installation
 
-Just download and make executable:
+Clone the repository and make the script executable:
 ```bash
-curl -O https://raw.githubusercontent.com/yourusername/cleanup/main/cleanup.sh
-chmod +x cleanup.sh
+git clone https://github.com/hatimmakki/remove-unused-files.git
+cd remove-unused-files
+chmod +x static-cleanup.sh
 ```
 
 ## Usage
 
 Basic usage:
 ```bash
-./cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -d
+./static-cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -d
 ```
-
-### Output example:
-
-<!--TODO: display image -->
-
-![Output](./images/output.png)
-
 
 ### Options
 
@@ -49,21 +34,30 @@ Required:
 - `-s SEARCH_IN`: File types to search in (comma-separated)
 
 Optional:
-- `-l LOCATION`: Where to look for static files. default is current location, or "."
-- `-i IGNORE`: Folders to ignore (comma-separated). for faster result specify folders like node_modules, or venv for python projects because it doesn't make sence to search in these folders.
-- `-d`: Dry run (don't actually delete), just show me what is going on.
-- `-v`: Verbose output. Show more details.
+- `-l LOCATION`: Where to look for static files
+- `-i IGNORE`: Folders to ignore (comma-separated)
+- `-d`: Dry run (don't actually delete)
+- `-v`: Verbose output
 
 ### Examples
 
 Check for unused PNGs and JPGs:
 ```bash
-./cleanup.sh -e "png,jpg" -s "html,js,css" -l "." -d
+./static-cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -d
 ```
 
 Include fonts and exclude some directories:
 ```bash
-./cleanup.sh -e "png,jpg,ttf,woff" -s "html,js,css,scss" -l "static/assets" -i "venv,node_modules" -d
+./static-cleanup.sh -e "png,jpg,ttf,woff" -s "html,js,css,scss" -l "static/assets" -i "venv,node_modules" -d
+```
+
+Real-world example - checking static assets in a Django project:
+```bash
+# First, run in dry-run mode to see what would be removed
+./static-cleanup.sh -e "png,jpg,svg" -s "html,js,css,scss" -l "static/assets" -i "venv,node_modules,dist" -d
+
+# If the results look good, run without -d to actually remove files
+./static-cleanup.sh -e "png,jpg,svg" -s "html,js,css,scss" -l "static/assets" -i "venv,node_modules,dist"
 ```
 
 ## How It Works
@@ -91,3 +85,7 @@ The script:
 ## Contributing
 
 Feel free to open issues or submit PRs if you have improvements!
+
+## License
+
+MIT License - feel free to use and modify as needed.
