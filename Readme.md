@@ -17,14 +17,27 @@ Download the script directly using `curl`:
 
 ```bash
 curl -O https://raw.githubusercontent.com/hatimmakki/remove-unused-files/main/cleanup.sh
-chmod +x cleanup.sh
+sudo mv cleanup.sh /usr/local/bin/cleanup
+chmod +x /usr/local/bin/cleanup
 ```
+
+or Using Github
+
+```bash
+git clone https://github.com/hatimmakki/remove-unused-files.git
+cd remove-unused-files
+sudo mv cleanup.sh /usr/local/bin/cleanup
+chmod +x /usr/local/bin/cleanup
+```
+
 
 ## Usage
 
 Basic usage:
+
 ```bash
-./cleanup.sh -e "png,jpg" -s "html,js,css" -l "static/assets" -d
+cleanup -e "png,jpg" -s "html,js,css" -l "static/assets" -d
+
 ```
 
 ### Outputy
